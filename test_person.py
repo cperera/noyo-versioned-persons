@@ -39,7 +39,6 @@ def test_person_from_dict():
     }
     dict_person = Person.from_dict(test_dict)
     print(f'Person from dict: {dict_person}')
-    print()
 
 def test_validate_person_dict():
     print(f'validate(invalid) -> {validate_person_dict(invalid)}')

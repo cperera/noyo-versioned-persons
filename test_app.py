@@ -1,7 +1,7 @@
 import requests
 import person
 
-base_url = '127.0.0.1:5000/'
+base_url = 'http://127.0.0.1:5000/'
 pdict_1 = {
     "firstname":"Cob",
     "lastname":"Caratheon",
@@ -26,19 +26,39 @@ def all_tests():
     assert test_delete(), "Could not delete person"
     assert test_update_idempotence(), "Duplicate updates both bumped version!"
 
-payload = {}
 def test_delete():
-    response = requests.delete(base_url+f'persons/{example_person.id}')
-    return False
+    response = requests.delete(base_url+f'person/{example_person.id}')
+    print(f'delete person {example_person.id}: status {response.status_code}')
+    if response.status_code == 200:
+        return True
+    else:
+        return False
 
 def test_create():
-    return False
+    response = requests.post(base_url+f'person/{example_person.id}',params=pdict_1)
+    print(f'status: {response.status_code}')
+    return response.status_code == 200
+
+def test_read():
+    response = requests.get(base_url+f'person/{example_person.id}')
+    return response.status_code==200
+
+def test_read_versioned():
+    response = requests.get(base_url+f'person/{example_person.id}/1')
+    return response.status_code==200
 
 def test_update():
-    return False
+    response = requests.post(base_url+f'person/{example_person.id}',params=pdict2)
+    return response.status_code==200
 
 def test_update_idempotence():
-    return False
+    response = requests.post(base_url+f'person/{example_person.id}',params=pdict_1)
+    assert status_code==200, 'first idempotence update failed'
+    first_person_version = person.redis_person_key(example_person.id)
+    assert status_code==200, 'duplicate idempotence update failed'
+    response = requests.post(base_url+f'person/{example_person.id}',params=pdict_1)
+    next_person_version = person.redis_person_key(example_person.id)
+    return first_person_version == next_person_version
 
 def main():
     all_tests()

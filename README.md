@@ -31,28 +31,29 @@ in redis, we will have
 and keys that track current version:
 - INCR(`person::id:<id>`)
 
+and finally, a set that keeps all the persons' ids
+- SADD(`persons`, `person::id:<id>`)
+
+
 when deleting, delete current version of this `Person` object
-- DECR(`person::id:<id>`)
-- 
+- DELETE(`person::id:<id>::v:<version>`)
+- DECR(`person::id:<id>`) -> returns new version
+- if new version is 0, delete key `person::id:<id>` and remove it from `persons` set
 
-then decrement its version (the value at key )
-
-and finally, a set that keeps all the 
 
 when person.delete_all (this is extra) delete all versions of this
-between current version and version 0 inclusive. Then, delete the
-key that tracks the current version.
+between current version and version 1 inclusive. 
 
 
 # Required Operations Checklist
-| - [x]  | Action          | Description            |
+| -[x]  | Action          | Description            |
 |--------|-----------------|------------------------|
-| - [ ]  |          Create | -> insert person       |
-| - [ ]  |     Single Read | id -> person           |
-| - [ ]  | Version S. Read | id, ver -> person@ver  |
-| - [ ]  |        Read All | -> [person1, person2..]|
-| - [ ]  |          Update | id -> person@ver       |
-| - [ ]  |          Delete | id -> del person(id)   |
+| -[x]  |          Create | -> insert person       |
+| -[x]  |     Single Read | id -> person           |
+| -[x]  | Version S. Read | id, ver -> person@ver  |
+| -[x]  |        Read All | -> [person1, person2..]|
+| -[ ]  |          Update | id -> person@ver       |
+| -[x]  |          Delete | id -> del person(id)   |
 
 
 
