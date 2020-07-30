@@ -27,7 +27,8 @@ valid_with_extra = {
 
 def test_person():
     print(bob)
-    print(bob.new_redis_object())
+    print(bob.to_json())
+    # print(bob.new_redis_object())
 
 def test_person_from_dict():
     test_dict = {
@@ -38,10 +39,7 @@ def test_person_from_dict():
     }
     dict_person = Person.from_dict(test_dict)
     print(f'Person from dict: {dict_person}')
-    print(
-        f'redis_object from person from dict:'
-        f'{dict_person.new_redis_object()}'
-    )
+    print()
 
 def test_validate_person_dict():
     print(f'validate(invalid) -> {validate_person_dict(invalid)}')
@@ -56,5 +54,11 @@ def all_tests():
     test_person()
     test_person_from_dict()
     test_redis_create_and_delete()
+
+def main():
+    all_tests()
+
+if __name__ == '__main__':
+    main()
 
 

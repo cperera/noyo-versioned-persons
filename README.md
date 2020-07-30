@@ -17,7 +17,7 @@ Flask app using redis as data store.
 A [`Person`](person.py) should have the following properties:
 | - [ ]  | NAME        | DATA TYPE          |
 |--------|-------------|--------------------|
-| - [ ]  | ID          | (choose any)       |
+| - [ ]  | ID          | (choice: UUID4)    |
 | - [ ]  | First Name  | string             |
 | - [ ]  | Middle Name | string, optional   |
 | - [ ]  | Last Name   | string             |
@@ -25,14 +25,21 @@ A [`Person`](person.py) should have the following properties:
 | - [ ]  | Age         | integer            |
 
 in redis, we will have
-`Person` versioned objects as
+`Person` versioned objects as hashes
 - HSET(`person::id:<id>::v:<version>`: first, last, email, age[, middle])
 
 and keys that track current version:
-- when deleting, delete current version of this `Person` object
-then decrement its version (the value at key `person::id:<id>`)
+- INCR(`person::id:<id>`)
 
-when delete_all (this is extra) delete all versions of this
+when deleting, delete current version of this `Person` object
+- DECR(`person::id:<id>`)
+- 
+
+then decrement its version (the value at key )
+
+and finally, a set that keeps all the 
+
+when person.delete_all (this is extra) delete all versions of this
 between current version and version 0 inclusive. Then, delete the
 key that tracks the current version.
 
@@ -62,5 +69,7 @@ This should be fine if we are using redis locally. Consider using pipelining,
 or another batching solution?, for bulk operations. Consider using tornado + 
 something like tornadis https://github.com/votem/toredis if need better network 
 i/o characteristics?
+
+Try to turn the return types that could be huge into generators?
 
 
