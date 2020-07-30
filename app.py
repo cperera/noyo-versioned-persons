@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file, make_response
+from flask import Flask, request, jsonify, send_file, make_response, redirect, url_for
 from redis import Redis
 import person
 
@@ -35,14 +35,14 @@ def get_all_persons():
 
 @app.route('/person/<uuid:id>/<int:version>')
 def get_versioned_person(id,version):
-    print(f'ID WAS {uuid}, V WAS {version}, get_versioned_person')
-    p = person.person_from_redis(uuid,version)
+    print(f'ID WAS {id}, V WAS {version}, get_versioned_person')
+    p = person.person_from_redis(id,version)
     return jsonify(p.to_dict())
 
 @app.route('/person/<uuid:id>', methods=['GET'])
 def get_person(id):
     print(f'ID WAS {id}, get_person')
-    p = person.person_from_redis(uuid)
+    p = person.person_from_redis(id)
     return jsonify(p.to_dict())
 
 @app.route('/person', methods=['POST'])
@@ -62,13 +62,13 @@ def create_person():
 @app.route('/person/<uuid:id>', methods=['POST'])
 def update_person(id):
     print(f'ID WAS {id}, update_person')
-    params = request.args
-    params['id'] =id
+    params = request.args.copy()
+    params['id'] =str(id)
     # this logic should move to person.py
     if person.validate_person_dict(params):
         p = person.Person.from_dict(params)
-        old_p = person.person_from_redis(id)
-        if p.to_dict() == old_p.to_dict():
+        old_p = person.person_from_redis(params['id'])
+        if (p and old_p) and p.to_dict() == old_p.to_dict():
             return f'person with id {id} was unchanged, no version bump'
         else:
             saved = p.save_to_redis()

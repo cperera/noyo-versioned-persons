@@ -7,26 +7,31 @@ redisClient = Redis(host=redis_host, port=redis_port,decode_responses=True)
 class Person:
     """person object"""
     required_fields = {'firstname','lastname','age','email'}
+    allowed_fields = {'id','middlename'}
     def __init__(self, firstname, lastname, age, email, 
             *args, id=None, middlename=None):
         """ Create person object from given params"""
         self.rep = f'Person({firstname},{lastname},{age},{email},{middlename})'
         self.id = id # use a class method for next id? redis auto-assign?
-        self.first = firstname
+        self.firstname = firstname
         self.middlename = middlename
-        self.last = lastname
+        self.lastname = lastname
         self.age = age
         self.email = email
         if not self.id:
             self.id = str(uuid.uuid4())
+        else:
+            self.id = str(id)
 
     def __repr__(self):
         return self.rep
 
     def to_dict(self):
-        fields = Person.required_fields.union({'id','middlename'})
+        fields = ['firstname','lastname','age','email','id','middlename']
         var_dict = vars(self)
-        return {key : var_dict[key] for key in vars(self) if key in fields}
+        print(var_dict)
+        return ({key : var_dict[key] for key in fields 
+            if key in var_dict and var_dict[key]})
 
     def save_to_redis(self):
         # creates or updates a redis object for this class.
@@ -35,7 +40,7 @@ class Person:
         # note: if no version, version is set to 1
         redisClient.hset(redis_person_key(self.id, version),mapping=self.to_dict())
         redisClient.sadd('person::uuidset',version_key)
-        return f'Success: {self} added.'
+        return f'Success: {self} added at version:{version}'
 
     @classmethod
     def from_dict(cls,arg_dict):
@@ -57,12 +62,10 @@ def redis_version_key(id):
     return f'person::id:{id}'
 
 def person_from_redis(id,version=None):
-    if version:
-        arg_dict = redisClient.get(redis_person_key(id,version))
-    else:
-        arg_dict = redisClient.get(redis_person_key(id))
-    if arg_dict:
-        return Person(arg_dict)
+    rp_key = redis_person_key(id,version)
+    if rp_key:
+        arg_dict = redisClient.hgetall(redis_person_key(id))
+        return Person.from_dict(arg_dict)
     else:
         return None
         
@@ -86,18 +89,18 @@ def delete_person_by_id(id):
         redisClient.delete(popped)
     return 1
 
-def post_person(person_dict):
-    print(f'attempting to POST person {person_dict}')
-    valid,message = validate_person_dict(person_dict)
-    if not valid:
-        return message
-    try:
-        id = redisClient.get(person_dict)
-        version = redisClient.incr()
-    except Exception as e:
-        print("encountered an exception!")
-        raise e
-    return
+# def post_person(person_dict):
+#     print(f'attempting to POST person {person_dict}')
+#     valid,message = validate_person_dict(person_dict)
+#     if not valid:
+#         return message
+#     try:
+#         id = redisClient.get(person_dict)
+#         version = redisClient.incr()
+#     except Exception as e:
+#         print("encountered an exception!")
+#         raise e
+#     return
 
 def all_persons():
     uuids = redisClient.smembers('person::uuidset')
