@@ -9,9 +9,12 @@ Flask app using redis as data store.
 1. activate virtual env: `source venv/bin/activate`
 1. install requirements with `pip install -r requirements.txt`
 1. start app using `flask run`
-[ ] docker pull redis
 
 ## Testing
+in order to test, the files test_app.py and test_person.py should be
+useful. I just imported them and used them to poke at the API. One important thing is to capture the UUID (it is printed in the logs right now) when doing test_create(). This will enable the other tests; I
+stored mine near the top of the file as 'example_uuid'. This
+could be improved.
 
 # Person objects
 A [`Person`](person.py) should have the following properties:
