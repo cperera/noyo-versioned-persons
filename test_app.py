@@ -29,8 +29,8 @@ def all_tests():
     assert test_update_idempotence(), "Duplicate updates both bumped version!"
 
 def test_delete():
-    response = requests.delete(base_url+f'person/{example_person.id}')
-    print(f'delete person {example_person.id}: status {response.status_code}')
+    response = requests.delete(base_url+f'person/{example_uuid}')
+    print(f'delete person {example_uuid}: status {response.status_code}')
     if response.status_code == 200:
         return True
     else:
